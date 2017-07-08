@@ -1,6 +1,6 @@
 FROM postgres:9.6
 
-ADD init.sql /init.sql
+ADD sql /sql
 ADD entrypoint.sh /entrypoint.sh
 
 ENTRYPOINT ["/entrypoint.sh"]
