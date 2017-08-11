@@ -1,8 +1,11 @@
-create extension if not exists cube;
-create extension if not exists tablefunc;
 drop database if exists book;
 create database book;
 \connect book;
+create extension if not exists cube;
+create extension if not exists tablefunc;
+create extension if not exists dict_xsyn;
+create extension if not exists fuzzystrmatch;
+create extension if not exists pg_trgm;
 
 create table if not exists countries (
   country_code char(2) primary key,
@@ -112,3 +115,31 @@ update holidays set colors = '{"red","green"}' where name = 'Christmas Day';
 --insert into month_count values (1),(2),(3),(4),(5),(6),(7),(8),(9),(10),(11),(12);
 
 \i /sql/delete_venue_rule.sql
+
+--day 3 starts
+--building out new tables
+create table if not exists genres (
+  name text unique,
+  position integer
+);
+create table if not exists movies (
+  movie_id serial primary key,
+  title text,
+  genre cube
+);
+create table if not exists actors (
+  actor_id serial primary key,
+  name text
+);
+--the unique requirement below is to prevent duplicate join values
+create table if not exists movies_actors (
+  movie_id integer references movies not null,
+  actor_id integer references actors not null,
+  unique (movie_id, actor_id)
+);
+create index if not exists movies_actors_movie_id on movies_actors (movie_id);
+create index if not exists movies_actors_actor_id on movies_actors (actor_id);
+create index if not exists movies_genres_cube on movies using gist (genre);
+create index if not exists movies_title_trigram on movies using gist(title gist_tgrm_ops);
+--gin -> generalized inverted index
+create index if not exists movies_title_searchable on movies using gin(to_tsvector('english', title));

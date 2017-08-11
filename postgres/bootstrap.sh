@@ -6,6 +6,7 @@ docker_status=$(docker inspect --format "{{ .State.Status }}" postgres)
 
 if [ "$docker_status" = "exited" ]; then
     docker rm -f postgres
+    docker run -d --name postgres postgres
 elif [ "$docker_status" != "running" ]; then
     docker run -d --name postgres postgres
 fi
